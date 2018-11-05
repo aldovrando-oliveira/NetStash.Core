@@ -1,3 +1,5 @@
+[![NuGet](https://img.shields.io/nuget/v/NetStash.Core.svg)](https://www.nuget.org/packages/NetStash.Core/)
+
 # NetStash.Core
 Logstash sender for .NET (based on the [NetStash](https://github.com/iquirino/NetStash) project)
 
