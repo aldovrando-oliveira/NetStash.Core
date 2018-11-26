@@ -1,36 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace NetStash.Log
+﻿namespace NetStash.Core.Log
 {
     public enum NetStashLogLevel
     {
-        //
-        // Summary:
-        //     Anything and everything you might want to know about a running block of code.
-        Verbose,
-        //
-        // Summary:
-        //     Internal system events that aren't necessarily observable from the outside.
-        Debug,
-        //
-        // Summary:
-        //     The lifeblood of operational intelligence - things happen.
-        Information,
-        //
-        // Summary:
-        //     Service is degraded or endangered.
-        Warning,
-        //
-        // Summary:
-        //     Functionality is unavailable, invariants are broken or data is lost.
-        Error,
-        //
-        // Summary:
-        //     If you have a pager, it goes off when one of these occurs.
-        Fatal
+        /// <summary>
+        /// Qualquer coisa e tudo que você pode querer saber sobre um bloco de código em execução.
+        /// </summary>
+         Verbose = 0,
+
+        /// <summary>
+        /// Eventos internos do sistema que não são necessariamente observáveis de fora.
+        /// </summary>
+        Debug = 1,
+
+        /// <summary>
+        /// A força vital da inteligência operacional - as coisas acontecem.
+        /// </summary>
+        Information = 2,
+
+        /// <summary>
+        /// O serviço está degradado ou em perigo.
+        /// </summary>
+        Warning = 3,
+        
+        /// <summary>
+        /// Funcionalidade não está disponível, dados perdidos ou quebrados.
+        /// </summary>
+        Error = 4,
+
+        /// <summary>
+        /// Erro critico
+        /// </summary>
+        Fatal = 5
     }
 }

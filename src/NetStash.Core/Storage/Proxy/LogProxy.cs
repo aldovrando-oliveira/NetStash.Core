@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Newtonsoft.Json;
 
-namespace NetStash.Storage.Proxy
+namespace NetStash.Core.Storage.Proxy
 {
     public class LogProxy : BaseProxy
     {
-        public LogProxy() : base()
-        {
-
-        }
-
+        /// <summary>
+        /// Adiciona uma nova mensagem no banco de dados
+        /// </summary>
+        /// <param name="log">Evento que sera adicionado</param>
         public void Add(NetStashEvent log)
         {
             Entities.Log addLog = new Entities.Log();
@@ -34,10 +30,15 @@ namespace NetStash.Storage.Proxy
             }
         }
 
+        /// <summary>
+        /// Recupera um evento do banco de dados
+        /// </summary>
+        /// <param name="id">Codigo do evento</param>
+        /// <returns></returns>
         public NetStashEvent Get(out long id)
         {
             Entities.Log getLog = null;
-            using (IDbConnection db = base.GetConnection())
+            using (IDbConnection db = GetConnection())
             using (IDbCommand cmd = db.CreateCommand())
             {
                 cmd.CommandText = "SELECT IdLog, Message from Log order by IdLog asc LIMIT 1";
@@ -48,9 +49,13 @@ namespace NetStash.Storage.Proxy
                 IDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
-                    getLog = new Entities.Log();
-                    getLog.IdLog = reader.GetInt64(reader.GetOrdinal("IdLog"));
-                    getLog.Message = reader.IsDBNull(reader.GetOrdinal("Message")) ? null : reader.GetString(reader.GetOrdinal("Message"));
+                    getLog = new Entities.Log
+                    {
+                        IdLog = reader.GetInt64(reader.GetOrdinal("IdLog")),
+                        Message = reader.IsDBNull(reader.GetOrdinal("Message"))
+                            ? null
+                            : reader.GetString(reader.GetOrdinal("Message"))
+                    };
 
                 }
             }
@@ -63,9 +68,14 @@ namespace NetStash.Storage.Proxy
 
             id = getLog.IdLog;
 
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<NetStashEvent>(getLog.Message);
+            return JsonConvert.DeserializeObject<NetStashEvent>(getLog.Message);
         }
 
+        /// <summary>
+        /// Recupera uma lista de eventos
+        /// </summary>
+        /// <param name="count">Quantidade maxima de mensagens que devem ser retornadas</param>
+        /// <returns></returns>
         public Dictionary<long, string> GetList(int count = 100)
         {
             Dictionary<long, string> ret = new Dictionary<long, string>();
@@ -98,6 +108,10 @@ namespace NetStash.Storage.Proxy
             return ret;
         }
 
+        /// <summary>
+        /// Exclui um evento do bano de daos
+        /// </summary>
+        /// <param name="id">Codigo do evento</param>
         public void Delete(long id)
         {
             if (id < 0) return;

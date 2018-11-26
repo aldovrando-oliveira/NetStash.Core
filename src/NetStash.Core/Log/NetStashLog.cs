@@ -1,140 +1,190 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using NetStash.Core.Worker;
 
-namespace NetStash.Log
+namespace NetStash.Core.Log
 {
     public class NetStashLog
     {
-        private string logstashIp = string.Empty;
-        private int logstashPort = -1;
-        private string logname = string.Empty;
-        private string system = string.Empty;
+        private readonly string _logger;
+        private readonly string _system;
 
-        public NetStashLog(string logstashIp, int logstashPort, string system, string logname = "NetStashLogs")
+        /// <summary>
+        /// Retorna uma nova instancia de <see cref="NetStashLog"/>
+        /// </summary>
+        /// <param name="host">Nome do servidor</param>
+        /// <param name="port">Porta do servidor</param>
+        /// <param name="system">Sistema que esta sendo logado</param>
+        /// <param name="logger">Componente do sistema que esta usando o Log</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public NetStashLog(string host, int port, string system, string logger = "NetStashLogs")
         {
-            if (string.IsNullOrWhiteSpace(logstashIp))
-                throw new ArgumentNullException("logstashIp");
+            if (string.IsNullOrEmpty(host) || string.IsNullOrWhiteSpace(host))
+                throw new ArgumentNullException(nameof(host));
 
-            if (string.IsNullOrWhiteSpace(logname))
-                throw new ArgumentNullException("logname");
+            if (string.IsNullOrEmpty(logger) || string.IsNullOrWhiteSpace(logger))
+                throw new ArgumentNullException(nameof(logger));
 
-            if (string.IsNullOrWhiteSpace(system))
-                throw new ArgumentNullException("system");
+            if (string.IsNullOrEmpty(system) || string.IsNullOrWhiteSpace(system))
+                throw new ArgumentNullException(nameof(system));
 
-            Worker.TcpWorker.Initialize(logstashIp, logstashPort);
+            TcpWorker.Initialize(host, port);
 
-            this.logstashIp = logstashIp;
-            this.logstashPort = logstashPort;
-            this.logname = logname;
-            this.system = system;
+            _logger = logger;
+            _system = system;
         }
 
+        /// <summary>
+        /// Para o serviço de sincronizaçao
+        /// </summary>
         public void Stop()
         {
-            Worker.TcpWorker.Stop();
+            TcpWorker.Stop();
         }
 
+        /// <summary>
+        /// Reinicia o serviço de sincronizaçao
+        /// </summary>
         public void Restart()
         {
-            Worker.TcpWorker.Restart();
+            TcpWorker.Restart();
         }
 
+        /// <summary>
+        /// Registra um novo log com nivel <see cref="NetStashLogLevel.Verbose"/>
+        /// </summary>
+        /// <param name="message">Mensagem descritiva do log</param>
+        /// <param name="values">Valores adicionais que serao incluidos no log</param>
         public void Verbose(string message, Dictionary<string, string> values = null)
         {
-            NetStashEvent netStashEvent = new NetStashEvent();
-            netStashEvent.Level = NetStashLogLevel.Verbose.ToString();
-            netStashEvent.Message = message;
-            netStashEvent.Fields = values;
-
-            this.AddSendToLogstash(netStashEvent);
+            Log(NetStashLogLevel.Verbose, message, null, values);
         }
 
+        /// <summary>
+        /// Registra um novo log com nivel <see cref="NetStashLogLevel.Debug"/>
+        /// </summary>
+        /// <param name="message">Mensagem descritiva do log</param>
+        /// <param name="values">Valores adicionais que serao incluidos no log</param>
         public void Debug(string message, Dictionary<string, string> values = null)
         {
-            NetStashEvent netStashEvent = new NetStashEvent();
-            netStashEvent.Level = NetStashLogLevel.Debug.ToString();
-            netStashEvent.Message = message;
-            netStashEvent.Fields = values;
-
-            this.AddSendToLogstash(netStashEvent);
+            Log(NetStashLogLevel.Debug, message, null, values);
         }
 
+        /// <summary>
+        /// Registra um novo log com nivel <see cref="NetStashLogLevel.Information"/>
+        /// </summary>
+        /// <param name="message">Mensagem descritiva do log</param>
+        /// <param name="values">Valores adicionais que serao incluidos no log</param>
         public void Information(string message, Dictionary<string, string> values = null)
         {
-            NetStashEvent netStashEvent = new NetStashEvent();
-            netStashEvent.Level = NetStashLogLevel.Information.ToString();
-            netStashEvent.Message = message;
-            netStashEvent.Fields = values;
-
-            this.AddSendToLogstash(netStashEvent);
+            Log(NetStashLogLevel.Information, message, null, values);
         }
 
+        /// <summary>
+        /// Registra um novo log com nivel <see cref="NetStashLogLevel.Warning"/>
+        /// </summary>
+        /// <param name="message">Mensagem descritiva do log</param>
+        /// <param name="values">Valores adicionais que serao incluidos no log</param>
         public void Warning(string message, Dictionary<string, string> values = null)
         {
-            NetStashEvent netStashEvent = new NetStashEvent();
-            netStashEvent.Level = NetStashLogLevel.Warning.ToString();
-            netStashEvent.Message = message;
-            netStashEvent.Fields = values;
-
-            this.AddSendToLogstash(netStashEvent);
+            Log(NetStashLogLevel.Warning, message, null, values);
         }
 
-
+        /// <summary>
+        /// Registra um novo log com nivel <see cref="NetStashLogLevel.Error"/>
+        /// </summary>
+        /// <param name="message">Mensagem descritiva do log</param>
+        /// <param name="values">Valores adicionais que serao incluidos no log</param>
         internal void InternalError(string message, Dictionary<string, string> values = null)
         {
-            NetStashEvent netStashEvent = new NetStashEvent();
-            netStashEvent.Level = NetStashLogLevel.Error.ToString();
-            netStashEvent.Message = message;
-            netStashEvent.Fields = values;
-
-            this.AddSendToLogstash(netStashEvent, false);
+            Log(NetStashLogLevel.Error, message, null, values);
         }
 
+        /// <summary>
+        /// Registra um novo log com nivel <see cref="NetStashLogLevel.Fatal"/>
+        /// </summary>
+        /// <param name="exception">Exceçao que sera anexado ao log</param>
+        /// <param name="values">Valores adicionais que serao incluidos no log</param>
         public void Error(Exception exception, Dictionary<string, string> values)
         {
-            NetStashEvent netStashEvent = new NetStashEvent();
-            netStashEvent.Level = NetStashLogLevel.Error.ToString();
-            netStashEvent.Message = exception.Message;
-            netStashEvent.ExceptionDetails = exception.StackTrace;
-            netStashEvent.Fields = values;
-
-            this.AddSendToLogstash(netStashEvent);
+            Log(NetStashLogLevel.Error, exception.Message, exception, values);
         }
 
+        /// <summary>
+        /// Registra um novo log com nivel <see cref="NetStashLogLevel.Error"/>
+        /// </summary>
+        /// <param name="message">Mensagem descritiva do log</param>
+        /// <param name="values">Valores adicionais que serao incluidos no log</param>
         public void Error(string message, Dictionary<string, string> values = null)
         {
-            NetStashEvent netStashEvent = new NetStashEvent();
-            netStashEvent.Level = NetStashLogLevel.Error.ToString();
-            netStashEvent.Message = message;
-            netStashEvent.Fields = values;
-
-            this.AddSendToLogstash(netStashEvent);
+            Log(NetStashLogLevel.Error, message, null, values);
         }
 
+        /// <summary>
+        /// Registra um novo log com nivel <see cref="NetStashLogLevel.Error"/>
+        /// </summary>
+        /// <param name="message">Mensagem descritiva do log</param>
+        /// <param name="exception">Exceçao que sera anexado ao log</param>
+        /// <param name="values">Valores adicionais que serao incluidos no log</param>
+        public void Error(string message, Exception exception, Dictionary<string, string> values = null)
+        {
+            Log(NetStashLogLevel.Error, message, exception, values);
+        }
+
+        /// <summary>
+        /// Registra um novo log com nivel <see cref="NetStashLogLevel.Fatal"/>
+        /// </summary>
+        /// <param name="message">Mensagem descritiva do log</param>
+        /// <param name="values">Valores adicionais que serao incluidos no log</param>
         public void Fatal(string message, Dictionary<string, string> values = null)
         {
-            NetStashEvent netStashEvent = new NetStashEvent();
-            netStashEvent.Level = NetStashLogLevel.Fatal.ToString();
-            netStashEvent.Message = message;
-            netStashEvent.Fields = values;
-
-            this.AddSendToLogstash(netStashEvent);
+            Log(NetStashLogLevel.Fatal, message, null, values);
         }
 
+        /// <summary>
+        /// Registra um novo log com nivel <see cref="NetStashLogLevel.Fatal"/>
+        /// </summary>
+        /// <param name="message">Mensagem descritiva do log</param>
+        /// <param name="exception">Exceçao que sera anexado ao log</param>
+        /// <param name="values">Valores adicionais que serao incluidos no log</param>
+        public void Fatal(string message, Exception exception, Dictionary<string, string> values = null)
+        {
+            Log(NetStashLogLevel.Fatal, message, exception, values);
+        }
+
+        /// <summary>
+        /// Registra um novo evento de log
+        /// </summary>
+        /// <param name="level">Nivel do log</param>
+        /// <param name="message">Mensagem descritiva do log</param>
+        /// <param name="exception">Exceçao que sera logado</param>
+        /// <param name="addtionalValues">Valores adicionais que serao incluidos no log</param>
+        public void Log(NetStashLogLevel level, string message, Exception exception,
+            Dictionary<string, string> addtionalValues)
+        {
+            var netStashEvent = new NetStashEvent
+            {
+                Level = level.ToString(),
+                Message = message,
+                ExceptionMessage = exception?.Message,
+                ExceptionDetails = exception?.StackTrace,
+                Fields = addtionalValues
+            };
+
+            AddSendToLogstash(netStashEvent);
+        }
+        
         private void AddSendToLogstash(NetStashEvent e, bool run = true)
         {
             e.Machine = Environment.MachineName;
-            e.Source = system;
-            e.Index = logname;
+            e.Source = _system;
+            e.Index = _logger;
 
             Storage.Proxy.LogProxy proxy = new Storage.Proxy.LogProxy();
             proxy.Add(e);
 
             if (run)
-                Worker.TcpWorker.Run();
+                TcpWorker.Run();
         }
     }
 }

@@ -2,7 +2,7 @@
 using System.Reflection;
 using Microsoft.Data.Sqlite;
 
-namespace NetStash.Storage.Proxy
+namespace NetStash.Core.Storage.Proxy
 {
     public class BaseProxy
     {
