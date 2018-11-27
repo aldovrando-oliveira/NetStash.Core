@@ -25,7 +25,7 @@ dotnet add package NetStash.Core
 ```csharp
 new NetStashLog({server}, {port}, {project}, {logger});
 ```
-| Propriedade 	|                Descrição               	|  type | Required |
+| Property 	|                Description               	|  type | Required |
 |-----------  	|---------------------------------------	| :------:	| :-----------:	|
 | server    	| Name or server's IP                 	| Text  	| Yes         	|
 | port       	| Server's port                      	| Number | Yes         	|
