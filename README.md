@@ -1,7 +1,7 @@
 [![NuGet](https://img.shields.io/nuget/v/NetStash.Core.svg)](https://www.nuget.org/packages/NetStash.Core/)
 
 # NetStash.Core
-A client for Logstash .NET Core (inspired by [NetStash](https://github.com/iquirino/NetStash)) 
+A client for Logstash .NET Core (similar to [NetStash](https://github.com/iquirino/NetStash)) 
 
 ### Features
   * Sends events via TCP
