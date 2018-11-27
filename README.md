@@ -1,14 +1,14 @@
 [![NuGet](https://img.shields.io/nuget/v/NetStash.Core.svg)](https://www.nuget.org/packages/NetStash.Core/)
 
 # NetStash.Core
-Cliente Logstash .NET  Core (Baseado no projeto [NetStash](https://github.com/iquirino/NetStash))
+A client for Logstash .NET Core (similar to [NetStash](https://github.com/iquirino/NetStash)) 
 
-Funcionalidades
-  * Envio de eventos via TCP
-  * Salva todos eventos em um banco SQLite para previnir problemas durante o envio das mensagens
-  * Sincronizaçao automatica quando a rede é reestabelecida
+### Features
+  * Sends events via TCP
+  * Saves all events into a sqlite database to prevent loss from network issues
+  * Automatic synchronization when network connection is stablished
 
-## Instalação
+## Install
 
 Nugget Package: https://www.nuget.org/packages/NetStash.Core
 
@@ -20,25 +20,26 @@ or
 dotnet add package NetStash.Core
 ```
 
-## Inicialização  
+## Initialize
 
 ```csharp
-new NetStashLog({servidor}, {porta}, {sistema}, {logger});
+new NetStashLog({server}, {port}, {project}, {logger});
 ```
-| Propriedade 	|                Descrição               	|  Tipo  	| Obrigatório 	|
-|-----------  	|---------------------------------------	|:------:	|:-----------:	|
-| servidor    	| Nome ou IP do servidor                 	| Texto  	| Sim         	|
-| porta       	| Porta do servidor                      	| Número 	| Sim         	|
-| sistema     	| No do sistema que está efetuando o Log 	| Texto  	| Sim         	|
-| logger      	| Componente do sistema                  	| Texto  	| Sim         	|
+| Property 	|                Description               	|  type | Required |
+|-----------  	|---------------------------------------	| :------:	| :-----------:	|
+| server    	| Name or server's IP                 	| Text  	| Yes         	|
+| port       	| Server's port                      	| Number | Yes         	|
+| project     	| Project's name to sends the logstash instance	| Text  	| Yes         	|
+| logger      	| Project's component                  	| Text  	| Yes         	|
 
-### Exemplo  
+### Example
 ```csharp
-var logger = new NetStashLog("127.0.0.1", 5030, "Sistema.Teste", "Startup")
+var logger = new NetStashLog("127.0.0.1", 5030, "Project.Test", "Startup")
 ```
 
-## Uso
-Niveis de log disponiveis:  
+## Getting Started
+
+Available log levels:
   - Verbose = 0,
   - Debug = 1,
   - Information = 2,
@@ -47,25 +48,25 @@ Niveis de log disponiveis:
   - Fatal = 5 
 
 ```csharp
-var logger = new NetStashLog("127.0.0.1", 5030, "Sistema.Teste", "Startup");
+var logger = new NetStashLog("127.0.0.1", 5030, "Project.Test", "Startup");
 
-logger.Verbose("Iniciando aplicação");
-logger.Debug("Carregando dependências");
-logger.Information("Aplicação inicializada com sucesso");
+logger.Verbose("Starting the application");
+logger.Debug("Loading dependencies");
+logger.Information("Application successfully started!");
 
-logger.Warning("Item não encontrado");
+logger.Warning("Item not found");
 
 var exception = new Exception();
 logger.Error(exception);
-logger.Error("Erro inesperado", exception);
+logger.Error("Unexpected Error", exception);
 
 var fatalException = new Exception();
 logger.Fatal(fatalException);
-logger.Fatal("Erro inesperado", fatalException);
+logger.Fatal("Unexpected Error", fatalException);
 
 ```
 
-Em todos os níveis é possível informar dados adicionais
+It is possible to provide any additional data
 ```csharp
 var logger = new NetStashLog("127.0.0.1", 5030, "Sistema.Teste", "Startup");
 
@@ -73,15 +74,15 @@ var logger = new NetStashLog("127.0.0.1", 5030, "Sistema.Teste", "Startup");
 var vals = new Dictionary<string, string>();
 vals.Add("itemid", "1235");
 
-log.Information("Teste", vals);
+log.Information("Test", vals);
 
 var exception = new Exception();
 logger.Error(exception, vals);
-logger.Error("Erro inesperado", exception, vals);
+logger.Error("Unexpected Error", exception, vals);
 ``` 
 
-## Saída
-A saida do log para o servidor é no formato `json`
+## Output
+The log's output has the `json` format.
 ```json
 {
   "timestamp": "",
@@ -94,11 +95,11 @@ A saida do log para o servidor é no formato `json`
   "error.details": ""
 }
 ```
-> Informações adicionais são incluídas no corpo da mensagem no mesmo nível das propriedades atuais
 
-## Exemplo de configuração
+> Additional informations are included in the message's body and the same level of the current properties
+
+## Configuration example
 ### Logstash
-
 
 ```
 input {
